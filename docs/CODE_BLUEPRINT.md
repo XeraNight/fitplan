@@ -375,7 +375,8 @@ apps/web/
 
 | File | Contains | Sprint |
 |---|---|---|
-| `client.js` | `request(method, path, body?) → data`; base URL from `VITE_API_URL`; adds Bearer token from `tokenStorage`; parses JSON; non-2xx → throws `ApiError { status, code, message, details }`; 401 → `onUnauthorized()` callback (logout); `204` → `null` | S1 |
+| `client.js` | `request(method, path, body?) → data`; base URL from `VITE_API_URL`; adds Bearer token from `tokenStorage`; parses JSON; non-2xx → throws `ApiError { status, code, message, details }`; 401 → `onUnauthorized()` callback (logout); `204` → `null`; 502/503/504 without our JSON (Render waking up) → `SERVICE_UNAVAILABLE`, and a **GET** is retried every 5 s for up to 75 s (POST/PUT/DELETE never, they could be applied twice) | S1 |
+| `client.test.js` | 502 then 200 → data after one retry; 504 for too long → `SERVICE_UNAVAILABLE`; POST is never repeated; our own error codes are kept | S1 |
 | `ApiError.js` | `class ApiError extends Error` | S1 |
 | `tokenStorage.js` | `getToken()`, `setToken(t)`, `clearToken()` (localStorage key `fitplan.token`) | S1 |
 | `authApi.js` | `loginWithGoogle(credential)`, `getMe()`, `wakeUpServices()` | S1 |
