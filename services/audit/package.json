@@ -1,0 +1,16 @@
+{
+  "name": "@fitplan/audit",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "db:indexes": "node --env-file=.env scripts/syncIndexes.js"
+  },
+  "dependencies": {
+    "mongoose": "^8.24.8"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0",
+    "vitest": "^5.1.0"
+  }
+}

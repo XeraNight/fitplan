@@ -1,0 +1,33 @@
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--accent-blue-text);
+  animation: spin 0.8s linear infinite;
+}
+
+.block {
+  display: grid;
+  place-items: center;
+  padding: var(--space-6) 0;
+}
+
+.page {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
+}

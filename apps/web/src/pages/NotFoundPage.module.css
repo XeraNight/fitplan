@@ -1,0 +1,17 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.page h1 {
+  font-size: var(--fs-h1);
+}
+
+.page p {
+  color: var(--text-secondary);
+}

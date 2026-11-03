@@ -1,0 +1,11 @@
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  margin: var(--space-3) 0;
+  border: 1px solid var(--danger-rose);
+  border-radius: var(--radius-md);
+  color: var(--danger-rose);
+}

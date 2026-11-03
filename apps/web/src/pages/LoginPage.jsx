@@ -1,0 +1,84 @@
+import { useEffect, useState } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import { useAuth } from "../context/AuthContext.jsx";
+import { wakeUpServices } from "../api/authApi.js";
+import ErrorMessage from "../components/ui/ErrorMessage.jsx";
+import Spinner from "../components/ui/Spinner.jsx";
+import styles from "./LoginPage.module.css";
+
+export default function LoginPage() {
+  const { user, login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [error, setError] = useState(null);
+  const [waking, setWaking] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+
+  // The free servers sleep after 15 min: start waking them while the user looks at this page.
+  useEffect(() => {
+    const slow = setTimeout(() => setWaking(true), 1500);
+    wakeUpServices()
+      .catch(() => {})
+      .finally(() => {
+        clearTimeout(slow);
+        setWaking(false);
+      });
+    return () => clearTimeout(slow);
+  }, []);
+
+  if (user) return <Navigate to={location.state?.from ?? "/routines"} replace />;
+
+  const onSuccess = async ({ credential }) => {
+    setError(null);
+    setSigningIn(true);
+    try {
+      await login(credential);
+      navigate(location.state?.from ?? "/routines", { replace: true });
+    } catch (err) {
+      setError(err);
+      setSigningIn(false);
+    }
+  };
+
+  return (
+    <main className={styles.page}>
+      <div className={styles.logo} aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 9v6M6 7v10M18 7v10M21 9v6M6 12h12" />
+        </svg>
+      </div>
+      <h1>FitPlan</h1>
+      <p className={styles.vision}>
+        Log every set in seconds.
+        <br />
+        See when you beat your best.
+      </p>
+
+      <div className={styles.button}>
+        {signingIn ? (
+          <Spinner delay={0} label="Signing in" />
+        ) : (
+          <GoogleLogin
+            onSuccess={onSuccess}
+            onError={() => setError({ code: "GOOGLE_TOKEN_INVALID" })}
+            theme="filled_black"
+            shape="rectangular"
+            text="signin_with"
+            width="260"
+          />
+        )}
+      </div>
+
+      <ErrorMessage error={error} />
+      {waking && (
+        <p className={styles.wake}>
+          <Spinner inline delay={0} /> Waking up the server… (up to a minute)
+        </p>
+      )}
+      <a className={styles.privacy} href="/privacy">
+        Privacy policy
+      </a>
+    </main>
+  );
+}

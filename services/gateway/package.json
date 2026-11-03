@@ -1,0 +1,24 @@
+{
+  "name": "@fitplan/gateway",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file=.env src/server.js",
+    "start": "node src/server.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fitplan/shared": "*",
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.3",
+    "google-auth-library": "^11.3.2",
+    "helmet": "^8.3.0",
+    "http-proxy-middleware": "^3.0.10",
+    "jsonwebtoken": "^9.0.3"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1",
+    "vitest": "^5.1.0"
+  }
+}

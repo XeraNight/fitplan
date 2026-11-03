@@ -1,0 +1,242 @@
+[
+  {
+    "name": "Barbell Bench Press",
+    "category": "Chest",
+    "primaryMuscle": "Pectoralis Major",
+    "equipment": "Barbell"
+  },
+  {
+    "name": "Incline Barbell Bench Press",
+    "category": "Chest",
+    "primaryMuscle": "Upper Chest",
+    "equipment": "Barbell"
+  },
+  {
+    "name": "Dumbbell Bench Press",
+    "category": "Chest",
+    "primaryMuscle": "Pectoralis Major",
+    "equipment": "Dumbbell"
+  },
+  {
+    "name": "Incline Dumbbell Press",
+    "category": "Chest",
+    "primaryMuscle": "Upper Chest",
+    "equipment": "Dumbbell"
+  },
+  {
+    "name": "Dumbbell Fly",
+    "category": "Chest",
+    "primaryMuscle": "Pectoralis Major",
+    "equipment": "Dumbbell"
+  },
+  {
+    "name": "Cable Fly",
+    "category": "Chest",
+    "primaryMuscle": "Pectoralis Major",
+    "equipment": "Cable"
+  },
+  {
+    "name": "Machine Chest Press",
+    "category": "Chest",
+    "primaryMuscle": "Pectoralis Major",
+    "equipment": "Machine"
+  },
+  {
+    "name": "Deadlift",
+    "category": "Back",
+    "primaryMuscle": "Erector Spinae",
+    "equipment": "Barbell"
+  },
+  {
+    "name": "Barbell Row",
+    "category": "Back",
+    "primaryMuscle": "Latissimus Dorsi",
+    "equipment": "Barbell"
+  },
+  {
+    "name": "One-Arm Dumbbell Row",
+    "category": "Back",
+    "primaryMuscle": "Latissimus Dorsi",
+    "equipment": "Dumbbell"
+  },
+  {
+    "name": "Lat Pulldown",
+    "category": "Back",
+    "primaryMuscle": "Latissimus Dorsi",
+    "equipment": "Cable"
+  },
+  {
+    "name": "Seated Cable Row",
+    "category": "Back",
+    "primaryMuscle": "Rhomboids",
+    "equipment": "Cable"
+  },
+  {
+    "name": "Straight-Arm Pulldown",
+    "category": "Back",
+    "primaryMuscle": "Latissimus Dorsi",
+    "equipment": "Cable"
+  },
+  {
+    "name": "Chest-Supported Machine Row",
+    "category": "Back",
+    "primaryMuscle": "Rhomboids",
+    "equipment": "Machine"
+  },
+  {
+    "name": "Barbell Squat",
+    "category": "Legs",
+    "primaryMuscle": "Quadriceps",
+    "equipment": "Barbell"
+  },
+  {
+    "name": "Romanian Deadlift",
+    "category": "Legs",
+    "primaryMuscle": "Hamstrings",
+    "equipment": "Barbell"
+  },
+  {
+    "name": "Hip Thrust",
+    "category": "Legs",
+    "primaryMuscle": "Glutes",
+    "equipment": "Barbell"
+  },
+  {
+    "name": "Leg Press",
+    "category": "Legs",
+    "primaryMuscle": "Quadriceps",
+    "equipment": "Machine"
+  },
+  {
+    "name": "Leg Extension",
+    "category": "Legs",
+    "primaryMuscle": "Quadriceps",
+    "equipment": "Machine"
+  },
+  {
+    "name": "Lying Leg Curl",
+    "category": "Legs",
+    "primaryMuscle": "Hamstrings",
+    "equipment": "Machine"
+  },
+  {
+    "name": "Bulgarian Split Squat",
+    "category": "Legs",
+    "primaryMuscle": "Quadriceps",
+    "equipment": "Dumbbell"
+  },
+  {
+    "name": "Standing Calf Raise",
+    "category": "Legs",
+    "primaryMuscle": "Calves",
+    "equipment": "Machine"
+  },
+  {
+    "name": "Kettlebell Goblet Squat",
+    "category": "Legs",
+    "primaryMuscle": "Quadriceps",
+    "equipment": "Kettlebell"
+  },
+  {
+    "name": "Overhead Press",
+    "category": "Shoulders",
+    "primaryMuscle": "Front Deltoids",
+    "equipment": "Barbell"
+  },
+  {
+    "name": "Seated Dumbbell Shoulder Press",
+    "category": "Shoulders",
+    "primaryMuscle": "Front Deltoids",
+    "equipment": "Dumbbell"
+  },
+  {
+    "name": "Dumbbell Lateral Raise",
+    "category": "Shoulders",
+    "primaryMuscle": "Side Deltoids",
+    "equipment": "Dumbbell"
+  },
+  {
+    "name": "Cable Lateral Raise",
+    "category": "Shoulders",
+    "primaryMuscle": "Side Deltoids",
+    "equipment": "Cable"
+  },
+  {
+    "name": "Face Pull",
+    "category": "Shoulders",
+    "primaryMuscle": "Rear Deltoids",
+    "equipment": "Cable"
+  },
+  {
+    "name": "Reverse Pec Deck",
+    "category": "Shoulders",
+    "primaryMuscle": "Rear Deltoids",
+    "equipment": "Machine"
+  },
+  {
+    "name": "Barbell Curl",
+    "category": "Arms",
+    "primaryMuscle": "Biceps",
+    "equipment": "Barbell"
+  },
+  {
+    "name": "Incline Dumbbell Curl",
+    "category": "Arms",
+    "primaryMuscle": "Biceps",
+    "equipment": "Dumbbell"
+  },
+  {
+    "name": "Dumbbell Hammer Curl",
+    "category": "Arms",
+    "primaryMuscle": "Brachialis",
+    "equipment": "Dumbbell"
+  },
+  {
+    "name": "Triceps Pushdown",
+    "category": "Arms",
+    "primaryMuscle": "Triceps",
+    "equipment": "Cable"
+  },
+  {
+    "name": "Overhead Cable Triceps Extension",
+    "category": "Arms",
+    "primaryMuscle": "Triceps",
+    "equipment": "Cable"
+  },
+  {
+    "name": "Skull Crusher",
+    "category": "Arms",
+    "primaryMuscle": "Triceps",
+    "equipment": "Barbell"
+  },
+  {
+    "name": "Close-Grip Bench Press",
+    "category": "Arms",
+    "primaryMuscle": "Triceps",
+    "equipment": "Barbell"
+  },
+  {
+    "name": "Cable Crunch",
+    "category": "Core",
+    "primaryMuscle": "Rectus Abdominis",
+    "equipment": "Cable"
+  },
+  {
+    "name": "Machine Crunch",
+    "category": "Core",
+    "primaryMuscle": "Rectus Abdominis",
+    "equipment": "Machine"
+  },
+  {
+    "name": "Cable Woodchopper",
+    "category": "Core",
+    "primaryMuscle": "Obliques",
+    "equipment": "Cable"
+  },
+  {
+    "name": "Pallof Press",
+    "category": "Core",
+    "primaryMuscle": "Obliques",
+    "equipment": "Cable"
+  }
+]

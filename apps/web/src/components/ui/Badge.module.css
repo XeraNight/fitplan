@@ -1,0 +1,25 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--space-2);
+  border-radius: 999px;
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.neutral {
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.blue {
+  background: var(--accent-blue-subtle);
+  color: var(--accent-blue-text);
+}
+
+.gold {
+  background: var(--pr-gold);
+  color: var(--bg-primary);
+  font-weight: 800;
+}

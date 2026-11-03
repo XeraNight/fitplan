@@ -1,0 +1,8 @@
+.confirm {
+  color: var(--text-secondary);
+  padding: var(--space-2) 0;
+}
+
+.confirm b {
+  color: var(--text-primary);
+}

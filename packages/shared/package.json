@@ -1,0 +1,16 @@
+{
+  "name": "@fitplan/shared",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.js",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1",
+    "vitest": "^5.1.0"
+  }
+}

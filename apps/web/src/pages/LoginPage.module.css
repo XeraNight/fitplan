@@ -1,0 +1,57 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+  text-align: center;
+}
+
+.logo {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--accent-blue);
+}
+
+.logo svg {
+  width: 42px;
+  height: 42px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.page h1 {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+}
+
+.vision {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.button {
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  margin-top: var(--space-5);
+}
+
+.wake {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.privacy {
+  margin-top: var(--space-6);
+  font-size: var(--fs-caption);
+}

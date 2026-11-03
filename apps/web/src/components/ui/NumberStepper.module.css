@@ -1,0 +1,51 @@
+.stepper {
+  display: flex;
+  gap: var(--space-1);
+  align-items: stretch;
+}
+
+.step {
+  min-width: var(--touch);
+  min-height: var(--touch);
+  border-radius: var(--radius-sm);
+  background: var(--border-subtle);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.step:disabled {
+  opacity: 0.4;
+}
+
+.value {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+}
+
+.value:focus-within {
+  border-color: var(--accent-blue);
+}
+
+.value input {
+  width: 100%;
+  min-width: 0;
+  max-width: 4.5ch;
+  text-align: center;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.value small {
+  color: var(--text-secondary);
+  font-size: var(--fs-caption);
+}
