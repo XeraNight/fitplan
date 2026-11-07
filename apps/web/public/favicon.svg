@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#2563EB"/><path d="M6 12v8M10 9.5v13M22 9.5v13M26 12v8M10 16h12" stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>FitPlan</title>
+  <!-- a barbell loaded with ever heavier plates; the heaviest (gold) is the new personal record -->
+  <rect width="512" height="512" rx="116" fill="#0F172A"/>
+  <rect x="60" y="240" width="392" height="32" rx="16" fill="#64748B"/>
+  <rect x="140" y="188" width="58" height="136" rx="18" fill="#2563EB"/>
+  <rect x="204" y="150" width="64" height="212" rx="20" fill="#60A5FA"/>
+  <rect x="274" y="104" width="72" height="304" rx="24" fill="#F59E0B"/>
+  <rect x="354" y="208" width="26" height="96" rx="9" fill="#CBD5E1"/>
+</svg>

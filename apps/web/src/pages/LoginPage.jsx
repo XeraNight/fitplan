@@ -43,12 +43,10 @@ export default function LoginPage() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.logo} aria-hidden="true">
-        <svg viewBox="0 0 24 24">
-          <path d="M3 9v6M6 7v10M18 7v10M21 9v6M6 12h12" />
-        </svg>
-      </div>
-      <h1>FitPlan</h1>
+      <img className={styles.logo} src="/favicon.svg" alt="" width="88" height="88" />
+      <h1>
+        Fit<span>Plan</span>
+      </h1>
       <p className={styles.vision}>
         Log every set in seconds.
         <br />

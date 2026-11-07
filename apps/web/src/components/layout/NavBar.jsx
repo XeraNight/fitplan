@@ -15,7 +15,12 @@ export default function NavBar() {
 
   return (
     <nav className={styles.nav} aria-label="Main">
-      <span className={styles.brand}>FitPlan</span>
+      <span className={styles.brand}>
+        <img src="/favicon.svg" alt="" width="28" height="28" />
+        <span className={styles.word}>
+          Fit<span>Plan</span>
+        </span>
+      </span>
       {TABS.map((tab) => (
         <NavLink
           key={tab.to}

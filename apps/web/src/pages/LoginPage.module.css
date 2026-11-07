@@ -9,26 +9,17 @@
 }
 
 .logo {
-  width: 72px;
-  height: 72px;
-  display: grid;
-  place-items: center;
-  border-radius: 18px;
-  background: var(--accent-blue);
-}
-
-.logo svg {
-  width: 42px;
-  height: 42px;
-  fill: none;
-  stroke: #fff;
-  stroke-width: 2;
-  stroke-linecap: round;
+  display: block;
 }
 
 .page h1 {
-  font-size: var(--fs-h1);
-  font-weight: 700;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.page h1 span {
+  color: var(--accent-blue-text);
 }
 
 .vision {
