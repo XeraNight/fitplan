@@ -24,7 +24,8 @@ export default function RoutineEditorPage() {
     try {
       if (id) await update(id, dto);
       else await create(dto);
-      navigate("/routines");
+      const notice = `Routine "${dto.name}" ${id ? "updated" : "created"}`;
+      navigate("/routines", { state: { notice } });
     } catch (err) {
       setSaveError(err);
       setSaving(false);

@@ -1,0 +1,33 @@
+.success {
+  position: fixed;
+  top: calc(var(--space-3) + env(safe-area-inset-top));
+  left: var(--space-4);
+  right: var(--space-4);
+  z-index: 30;
+  max-width: 528px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-surface);
+  border: 1px solid var(--success-emerald);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+}
+
+.success p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.check {
+  color: var(--success-emerald);
+  font-weight: 700;
+}
+
+@media (min-width: 900px) {
+  .success {
+    left: calc(200px + var(--space-4));
+  }
+}

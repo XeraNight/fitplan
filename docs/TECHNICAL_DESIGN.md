@@ -1,7 +1,7 @@
 # FitPlan — Technical Design Document
 
-> **Version:** 2.2 · **Date:** 03.11.2026 · **Sprint:** 1 (26.10.–22.11.2026)
-> **Team:** Jakub Kalina (Lead Developer — backend & frontend) · Ran Regev (Lead Analyst & QA Tester)
+> **Version:** 2.6 · **Date:** 07.11.2026 · **Sprint:** 1 (26.10.–22.11.2026)
+> **Team:** Jakub Kalina (Lead Developer — backend & frontend) · Ran Regev (Lead Analyst) · Vitalik Holoienko (QA Tester, since 04.11.2026)
 > **Companion documents:** *FitPlan Code Map* lists every file of the application (what it contains and why); *FitPlan UI/UX Guide* shows every screen, the colour palette and the mobile-first rules.
 > **Rule:** If code ever disagrees with these two documents, either the code is wrong or the document is updated first. Nothing is implemented that is not described here.
 
@@ -53,8 +53,8 @@
 - **Dedicated Audit Log service** → a *Must have*, not optional.
 
 **Team constraints:**
-- 2 people, students → **every technology must be explainable by both of us**. We prefer fewer libraries and built-in features over "clever" tooling.
-- Roles: **Jakub** writes all code (backend + frontend, deployment). **Ran** owns requirements/analysis, test scenarios, API verification (Postman) and manual QA. The Project Manager role rotates per sprint (see project plan).
+- 3 students (Vitalik joined on 04.11.2026) → **every technology must be explainable by the team**, above all by Jakub and Ran at the consultation. We prefer fewer libraries and built-in features over "clever" tooling.
+- Roles: **Jakub** writes all code (backend + frontend, deployment). **Ran** owns requirements/analysis, documents and the exercise data. **Vitalik** owns quality assurance: test scenarios, API verification (Postman), manual testing and defect reports. The Project Manager rotates and presents his sprint at the consultation (Project preparation Ran, Sprint 1 Jakub, Sprint 2 Vitalik; Sprint 3 has no consultation, the whole team finishes the MVP and the final video; see project plan).
 
 ### 1.1 Development approach — hybrid: incremental data foundation + iterative features
 
@@ -71,7 +71,6 @@ Delivery order (each sprint ends with a working demo from the user's perspective
 ### 1.2 Units & input precision
 - Weight is always in **kilograms, whole numbers only — smallest step is 1 kg** (no 0.25 / 0.5 / 1.25 kg plates). Keeps input fast and the rules simple.
 - Reps are whole numbers.
-- The *estimated* 1RM (§8.4) is calculated by the server and may have one decimal place.
 
 ### 1.3 Every sprint ships a working app
 Rule: **what is not built yet is not visible.** The app never shows a button, tab or page that does nothing. Each sprint only *adds*; nothing from an earlier sprint is rewritten, because the data layer is complete from Sprint 1.
@@ -112,7 +111,7 @@ How it is done in code: the tab list (`NavBar.jsx`), the routes (`App.jsx`) and 
 | Styling | **Plain CSS + CSS Modules + CSS variables** | – | Design tokens from the blueprint become CSS variables. No Tailwind/UI kit → nothing to explain except CSS. |
 | Charts | **Hand-written SVG** | – | A line chart is ~60 lines of code and we can explain every coordinate. No chart library. |
 | Tests | **Vitest**, **Supertest**, **mongodb-memory-server**, **React Testing Library**; **Playwright** (E2E) | latest | One test runner for frontend and backend; Supertest calls Express without a real server; in-memory MongoDB → tests never touch Atlas. |
-| Code quality | **ESLint** + **Prettier** | latest | Same formatting for both of us → clean diffs. |
+| Code quality | **ESLint** + **Prettier** | latest | Same formatting everywhere → clean diffs. |
 | Hosting | **Vercel** (frontend) · **Render** (gateway + 3 services) · **MongoDB Atlas** (database) | free tiers | HTTPS automatic, deploy from GitHub, no cost (§10). |
 | Project tracking | **Google Sheets** | – | Our chosen tracking tool: capacity plan, PBS/WBS per sprint, backlogs, estimate vs. actual hours. |
 
@@ -188,7 +187,7 @@ sequenceDiagram
     DB-->>S: modified → isPR = true
     S->>DB: push set into active session
     S-)A: SET_LOGGED, PR_ACHIEVED (not awaited)
-    S-->>G: 201 {set, isPR:true, prTypes:["weight","e1rm"]}
+    S-->>G: 201 {set, isPR:true}
     G-->>W: 201 …
     W->>W: show set + gold PR badge
 ```
@@ -255,6 +254,7 @@ All except `/login` are wrapped in `<ProtectedRoute>` (redirects to `/login` wit
 
 ### 4.4 Design system
 Blueprint design tokens 1:1 as CSS variables in `tokens.css` (`--bg-primary: #0F172A`, `--accent-blue: #2563EB`, `--pr-gold: #F59E0B`, …). Dark theme, touch targets ≥ 44 px.
+**Logo:** a barbell loaded with ever heavier plates, the heaviest one gold (= the new personal record); `public/favicon.svg`, also on the login page and in the side bar. Rules for its use: UI/UX Guide §2.
 
 ### 4.5 How we hit "< 3 s per set"
 1. Weight and reps **pre-filled** with the previous set (or the routine target) → most sets need 0–1 changes.
@@ -270,6 +270,7 @@ Points `{date, topWeightKg}` → X spaced evenly per session, Y scaled linearly 
 - `VITE_API_URL` = gateway URL (empty locally → Vite dev proxy forwards `/api` to `http://localhost:3000`).
 - `client.js` adds `Authorization: Bearer <token>`, parses JSON, turns error responses into an `ApiError { status, code, message }`, and on `401` logs the user out.
 - Error codes from the server (e.g. `SET_WEIGHT_OUT_OF_RANGE`) are mapped to friendly texts in one place (`utils/errorMessages.js`).
+- After a routine is created, updated or deleted the user sees a short green confirmation (`ui/SuccessMessage.jsx`, closes itself after 4 s), as US1 requires. It is separate from the audit log, which records the same actions on the server from Sprint 3.
 
 ### 4.8 Hosting — Vercel
 | Setting | Value |
@@ -379,7 +380,7 @@ When a routine is saved, the ABL looks up each exercise and stores a **copy of i
 | | |
 |---|---|
 | **Owns** | `WorkoutSession` (with embedded sets), `ProgressLog` – database `fitplan_session` |
-| **Rules** | **R-2** (weight), **R-3** (one active workout), **R-4** (PR + Epley 1RM) |
+| **Rules** | **R-2** (weight), **R-3** (one active workout), **R-4** (personal record = heaviest weight) |
 | **Modules** | *session* (start/log/finish/discard), *PR engine* (R-4), *history* (US4), *analytics* (US3) |
 | **Endpoints** | `/sessions…`, `/progress/prs`, `/analytics/exercises/:id` (§9.4) |
 | **Calls** | Routine (`GET /routines/:id` on start), Audit (`SESSION_*`, `SET_LOGGED`, `PR_ACHIEVED`) |
@@ -391,7 +392,7 @@ When a routine is saved, the ABL looks up each exercise and stores a **copy of i
 
 **History (US4):** paged list of completed sessions, newest first, with a summary per session (§9.4).
 
-**Analytics (US3):** a MongoDB aggregation over the user's completed sessions for one exercise → per session: top weight, best estimated 1RM, tonnage. Chart data comes from the same session documents – no extra collection.
+**Analytics (US3):** a MongoDB aggregation over the user's completed sessions for one exercise → per session: top weight and tonnage. Chart data comes from the same session documents – no extra collection.
 
 ### 6.4 Audit Log Service (`services/audit`, :3003)
 | | |
@@ -458,9 +459,7 @@ Conventions: `_id` = MongoDB ObjectId; all documents get `createdAt`/`updatedAt`
 | ↳ `setNumber` | Number | 1, 2, 3… per exercise |
 | ↳ `weightKg` | Number | **R-2: 0 < w < 500**, whole kg (effectively 1–499) |
 | ↳ `reps` | Number | integer 1–100 |
-| ↳ `est1RM` | Number \| null | Epley, computed by server (§8.4) |
-| ↳ `isPR` | Boolean | computed by server |
-| ↳ `prTypes` | [String] | `"weight"`, `"e1rm"` |
+| ↳ `isPR` | Boolean | computed by server (R-4, §8.4) |
 | ↳ `loggedAt` | Date | |
 | `totalVolumeKg` | Number | Σ(weight × reps), computed on finish |
 | `durationSec` | Number | computed on finish |
@@ -477,7 +476,6 @@ One document per (user, exercise).
 | `exerciseId` | ObjectId | |
 | `exerciseName` | String | snapshot |
 | `maxWeightKg`, `maxWeightAt`, `maxWeightSessionId` | Number, Date, ObjectId | heaviest weight ever logged – when, in which workout |
-| `maxEst1RM`, `maxEst1RMAt`, `maxEst1RMSessionId` | Number, Date, ObjectId | best estimated 1RM ever – when, in which workout |
 
 - Index: `{ userId: 1, exerciseId: 1 }` **unique**.
 
@@ -517,26 +515,20 @@ Every rule is enforced **on the server**. The UI also checks, but only for a nic
 
 **Abandoned workout:** when an active session exists, the UI shows *"You have an unfinished workout from <date> — Continue / Finish / Discard"*. Discard sets `status: "discarded"` and frees the user. No automatic timeouts in the MVP.
 
-### 8.4 R-4 — Personal Record (weight **or** estimated 1RM)
-**Estimated 1RM (Epley formula):**
-```
-reps == 1        → e1RM = weight
-2 ≤ reps ≤ 12    → e1RM = weight × (1 + reps / 30)   (rounded to 0.1 kg)
-reps > 12        → e1RM = null   (formula unreliable for high reps, not counted)
-```
-| Set | Calculation | e1RM |
-|---|---|---|
-| 100 kg × 1 | reps = 1 → weight | **100.0 kg** |
-| 100 kg × 8 | 100 × (1 + 8/30) = 100 × 1.2667 | **126.7 kg** |
-| 120 kg × 5 | 120 × (1 + 5/30) = 120 × 1.1667 | **140.0 kg** |
-| 60 kg × 15 | reps > 12 | **null** |
+### 8.4 R-4 — Personal Record (heaviest weight)
+A **personal record (PR)** is a set whose weight is **strictly higher** than the heaviest weight the user has ever logged for that exercise. Reps do not matter for the record.
 
-**PR decision** for a logged set (weight `w`, e1RM `e`):
-1. No ProgressLog for (user, exercise) yet → create it with `w` and `e` as the baseline. **The first-ever set is NOT a PR.**
-2. Otherwise two **atomic conditional updates**:
-   - `updateOne({ userId, exerciseId, maxWeightKg: { $lt: w } }, { $set: { maxWeightKg: w, … } })` → modified → PR type `"weight"`.
-   - the same for `maxEst1RM` with `e` (only if `e !== null`) → PR type `"e1rm"`.
-3. `isPR = prTypes.length > 0`. Strictly greater – equalling a record is not a PR.
+| Best so far | Logged set | PR? |
+|---|---|---|
+| – (first set of the exercise) | 100 kg × 8 | no, it becomes the baseline |
+| 115 kg | 120 kg × 8 | **yes** (Alex case) |
+| 120 kg | 120 kg × 10 | no (equal weight) |
+| 120 kg | 110 kg × 12 | no |
+
+**PR decision** for a logged set with weight `w`:
+1. No ProgressLog for (user, exercise) yet → create it with `w` as the baseline. **The first-ever set is NOT a PR.**
+2. Otherwise one **atomic conditional update**: `updateOne({ userId, exerciseId, maxWeightKg: { $lt: w } }, { $set: { maxWeightKg: w, maxWeightAt, maxWeightSessionId } })` → a document was modified → `isPR = true`.
+3. Strictly greater – equalling a record is not a PR.
 
 **Why conditional updates instead of "read, compare in JS, write"?** Read-compare-write has a race condition (two sets logged at once could both read the old maximum). The condition inside `updateOne` is checked and applied atomically by MongoDB.
 
@@ -579,13 +571,13 @@ reps > 12        → e1RM = null   (formula unreliable for high reps, not counte
 |---|---|---|---|---|
 | POST | `/api/sessions` | `{ routineId }` | `201 WorkoutSession` · `409` R-3 | US2 |
 | GET | `/api/sessions/active` | – | `WorkoutSession` or `204` | US2 |
-| POST | `/api/sessions/:id/sets` | `{ exerciseId, weightKg, reps }` | `201 { set, isPR, prTypes }` | US2 |
+| POST | `/api/sessions/:id/sets` | `{ exerciseId, weightKg, reps }` | `201 { set, isPR }` | US2 |
 | POST | `/api/sessions/:id/finish` | – | `WorkoutSession` (with volume, duration) | US2 |
 | POST | `/api/sessions/:id/discard` | – | `WorkoutSession` | US2 |
 | GET | `/api/sessions` | `?page=1&limit=20` | `{ items:[SessionSummary], page, total }` (completed, newest first) | US4 |
 | GET | `/api/sessions/:id` | – | full `WorkoutSession` | US4 |
 | GET | `/api/progress/prs` | – | `[ProgressLog]` | US3 |
-| GET | `/api/analytics/exercises/:exerciseId` | `?last=10` | `{ points:[{ date, sessionId, topWeightKg, best1RM, tonnageKg, isPR }] }` | US3 |
+| GET | `/api/analytics/exercises/:exerciseId` | `?last=10` | `{ points:[{ date, sessionId, topWeightKg, tonnageKg, isPR }] }` | US3 |
 
 `SessionSummary` = `{ id, routineName, startTime, durationSec, totalVolumeKg, prCount }`.
 
@@ -672,7 +664,8 @@ Render runs each service as a normal long-running Express server – exactly wha
 ### 10.6 Cold start & demo readiness
 **Risk:** after 15 min without traffic the services sleep; the first request can take ~1 min (gateway and a service may both need to wake).
 **Mitigations:**
-- `GET /api/health/services` wakes all 4 services in parallel; the frontend calls it when the login page opens, and shows *"Waking up the server…"* if it takes longer than 3 s.
+- `GET /api/health/services` wakes all services in parallel; the frontend calls it when the login page opens, and shows *"Waking up the server…"* if it takes longer than 1.5 s.
+- While a service wakes up, Render answers 502/503/504 without our JSON. `apps/web/src/api/client.js` treats this as `SERVICE_UNAVAILABLE` and **repeats reads (GET) every 5 s for up to 75 s**, so the user sees a spinner instead of an error. Writes (POST/PUT/DELETE) are never repeated, because they could be applied twice; the user gets a plain message and tries again.
 - Before every demo/recording: open the app ~3 minutes earlier.
 - If it becomes a real problem: upgrade the gateway to a paid instance – same code, configuration change only.
 
@@ -704,9 +697,9 @@ Ports: web 5173, gateway 3000, services 3001–3003. (Port 5000 is avoided – m
 
 ### 10.9 Release flow
 1. Jakub implements a ticket; tests pass locally (`npm test`).
-2. Ran and Jakub review the change together (both must understand it).
+2. Jakub explains the change to the team (Ran and Vitalik must understand what it does and how to test it).
 3. Jakub pushes to `main` → Vercel and Render redeploy automatically (only changed services).
-4. Ran runs the Postman collection + manual checks against the deployed URL.
+4. Vitalik runs the Postman collection + manual checks against the deployed URL and reports defects.
 
 First deployment happens already in **Sprint 1** (gateway + routine + web), so the 23.11. demo runs on a real URL and deployment problems appear early.
 
@@ -734,14 +727,16 @@ First deployment happens already in **Sprint 1** (gateway + routine + web), so t
 
 | Level | Tool | What | Who | When |
 |---|---|---|---|---|
-| Unit | Vitest | Epley, PR decision, R-1/R-2 boundaries | Jakub | with each feature |
+| Unit | Vitest | PR decision, R-1/R-2 boundaries | Jakub | with each feature |
 | API / integration | Vitest + Supertest + mongodb-memory-server | each endpoint: happy path, rule violations, 401, 404 (other user's data), R-3 race | Jakub | with each feature |
-| API verification | Postman collection (`postman/`) | every endpoint against test scenarios (Alex, Tomáš cases) | Ran | each sprint |
+| API verification | Postman collection (`postman/`) | every endpoint against test scenarios (Alex, Tomáš cases) | Vitalik | each sprint |
 | Component | Vitest + React Testing Library | RoutineBuilder validation (Sprint 1), SetInput (Sprint 2) | Jakub | Sprint 1–2 |
-| End-to-end | Playwright (`e2e/`) | the 4 user-story happy paths on the deployed app | Jakub (scenarios by Ran) | Sprint 3 |
-| Manual / exploratory | test scenario checklist | full user flows on phone + desktop, defect reports | Ran | each sprint, before the demo |
+| End-to-end | Playwright (`e2e/`) | the 4 user-story happy paths on the deployed app | Jakub (scenarios by Vitalik) | Sprint 3 |
+| Manual / exploratory | test scenario checklist | full user flows on phone + desktop, defect reports | Vitalik | each sprint, before the demo |
 
-**Definition of Done** for any ticket: code + tests pass locally + both of us can explain it + documented if it changes this design.
+**Definition of Done** for any ticket: code + tests pass locally + the team can explain it + documented if it changes this design. Each Sprint 1 ticket also has its own definition of done in the sprint backlog.
+
+**State on 07.11.2026 (Sprint 1):** 87 automated tests pass: data layer of all three services (25), routine API and rules (19), gateway and sign-in (14), shared package (9), web components, pages and API client (20). Postman collection and manual testing by Vitalik follow before the demo.
 
 ---
 
@@ -749,12 +744,12 @@ First deployment happens already in **Sprint 1** (gateway + routine + web), so t
 
 Sprints are numbered as in the course schedule: project preparation (documentation) is not a sprint; Sprint 1 is the first coding sprint.
 
-| Sprint | Period | Delivered (user's perspective) | Technical content | Jakub (developer) | Ran (analyst & QA) |
-|---|---|---|---|---|---|
-| **Project preparation** | 12.10.–25.10. | – (documentation) | Business requests, PBS/WBS, capacity & project plan | co-author | lead author |
-| **1** | 26.10.–22.11. (demo 23.11.) | "I can sign in with Google, browse exercises and create my workout templates." | **Complete data layer** (all schemas, indexes, validators, seed) · monorepo · gateway + Google auth/JWT · routine service (R-1) · web: login, routines · first deployment (Vercel, Render, Atlas) | all code + deploy | exercise catalog data, US1 test scenarios, Postman checks, manual QA, backlog |
-| **2** | 23.11.–13.12. (demo 14.12.) | "I can run a workout from my template, log sets in seconds, see PR badges, and browse my history." | session service: start/log/finish/discard (R-2, R-3, R-4 + e1RM) · history API · web: active workout, history | all code | US2/US4 test scenarios, PR edge cases, risk list |
-| **3** | 14.12.–January 2027 | "I can see my strength progress over time; the app runs publicly over HTTPS." | audit service + events · analytics API · web: progress chart + PR grid · E2E tests · final deployment | all code + video recording | E2E scenarios, regression testing, demo script, final evaluation |
+| Sprint | Period | Delivered (user's perspective) | Technical content | Jakub (developer) | Ran (analyst) | Vitalik (QA tester) |
+|---|---|---|---|---|---|---|
+| **Project preparation** | 12.10.–25.10. | – (documentation) | Business requests, PBS/WBS, capacity & project plan | co-author | lead author (PM) | – (joined 04.11.) |
+| **1** | 26.10.–22.11. (demo 23.11.) | "I can sign in with Google, browse exercises and create my workout templates." | **Complete data layer** (all schemas, indexes, validators, seed) · monorepo · gateway + Google auth/JWT · routine service (R-1) · web: login, routines · first deployment (Vercel, Render, Atlas) | all code + deploy (PM, presents 23.11.) | exercise catalog data, data model review, backlog | US1 test scenarios, Postman checks, manual QA |
+| **2** | 23.11.–13.12. (demo 14.12.) | "I can run a workout from my template, log sets in seconds, see PR badges, and browse my history." | session service: start/log/finish/discard (R-2, R-3, R-4) · history API · web: active workout, history | all code | risk list, document updates | US2/US4 test scenarios, PR edge cases (PM, presents 14.12.) |
+| **3** | 14.12.–January 2027 | "I can see my strength progress over time; the app runs publicly over HTTPS." | audit service + events · analytics API · web: progress chart + PR grid · E2E tests · final deployment | all code + video recording | demo script, final documentation | E2E scenarios, regression testing, final evaluation · Sprint 3: whole team, no PM |
 
 ---
 
@@ -779,13 +774,14 @@ Sprints are numbered as in the course schedule: project preparation (documentati
 | D-3 | **3 services** (Routine, Session, Audit) + gateway | 5 services (separate History, Analytics) | One service per owned data set; no duplicated session data. |
 | D-4 | **Database per service** in one Atlas cluster, separate DB users | One shared database | Clear ownership, least privilege, free tier. |
 | D-5 | **Hybrid approach**: data layer up front, features iteratively | Pure waterfall / pure agile | Stable foundation + working demo every sprint (§1.1). |
-| D-6 | **R-4 = weight OR estimated 1RM (Epley)**, first set = baseline | Weight only | Rewards rep PRs too; Epley is the most common, simple formula. |
+| D-6 | **R-4 = heaviest weight only**, first set = baseline | Records that also take the reps into account | Simple to explain and to test; changed on 04.11.2026 to keep the MVP small. |
 | D-7 | **Whole kg only** (1 kg step) | 0.25 / 0.5 kg steps | Faster input, simpler rules. |
 | D-8 | **Own JWT** after Google sign-in, stored in localStorage | Google token directly; cookies | Independent of Google token lifetime; cross-site cookies unreliable. |
 | D-9 | **Fire-and-forget audit events** over HTTP | Message queue | Simple; the user is never blocked by the audit service. |
 | D-10 | **Vercel (web) + Render (backend) + Atlas** (all free) | Cloud Run, AWS, Railway, Vercel functions | Lowest effort, HTTPS included, no cost (§10.5). |
 | D-11 | **`render.yaml` + build filters**, services built from repo root | Separate repos; manual dashboard config | Infrastructure versioned in Git; shared package available; only changed services redeploy. |
-| D-12 | **Google Sheets** as tracking tool | uuSprintMan, Jira | Already used by the team, real-time editing by both members, flexible for PBS/WBS + estimate vs. actual. |
+| D-12 | **Google Sheets** as tracking tool | uuSprintMan, Jira | Already used by the team, real-time editing by the whole team, flexible for PBS/WBS + estimate vs. actual. |
 | D-13 | **Secrets generated by Render** (`generateValue`) for `INTERNAL_KEY` and `JWT_SECRET` | Generate locally and paste into the dashboard | Nobody ever sees or copies the production secrets; the shared key is identical in all services by construction. |
 | D-14 | **Google sign-in published** (External, basic scopes) + static privacy page | Testing mode with a list of test users | The teacher and anyone else can sign in with any Google account; basic scopes need no Google verification. |
 | D-15 | Frontend address **`fitplan-uu.vercel.app`** | `fitplan.vercel.app` | The shorter name is already taken by another Vercel project. |
+| D-16 | **Repeat reads while a free server wakes up** (GET every 5 s, max 75 s) | Show an error; pay for an always-on server | No red error in the demo after a pause, no cost; writes are not repeated so nothing is saved twice. |

@@ -1,6 +1,6 @@
 # FitPlan — Code Blueprint (every file of the application)
 
-> **Version:** 1.0 · **Date:** 27.10.2026 · **Status:** draft for approval by Jakub & Ran
+> **Version:** 1.2 · **Date:** 07.11.2026 · **Status:** approved by Jakub & Ran before coding (Sprint 1); updated whenever a file is added
 > **Companion of:** `TECHNICAL_DESIGN.md` (the *why* at system level). This document is the *what, file by file*.
 > **Rule:** no file is created that is not listed here. A new file = update this document first (one line is enough).
 
@@ -33,7 +33,7 @@
 | `packages/shared` | 9 | 2 |
 | `services/gateway` | 16 | 3 |
 | `services/routine` | 22 | 4 |
-| `services/session` | 31 | 8 |
+| `services/session` | 29 | 7 |
 | `services/audit` | 14 | 3 |
 | `apps/web` | ≈ 100 (about half are small `.module.css` files) | 4 |
 | `e2e` | 7 | 5 |
@@ -72,9 +72,9 @@ fitplan/
 | `.prettierignore` | `docs/`, `package-lock.json` | the design documents are copies and keep their own table layout | S1 |
 | `eslint.config.js` | recommended JS rules + React hooks rules for `apps/web` | catches typical bugs (unused vars, missing hook deps) | S1 |
 | `render.yaml` | web services (S1 gateway + routine, S2 + session, S3 + audit): build/start commands, build filters, health check path, region Frankfurt; `INTERNAL_KEY` (env group `fitplan-internal`) and `JWT_SECRET` are `generateValue: true` (Render creates them, nobody copies them); `MONGODB_URI` per service `sync: false` (entered once in Render) | Render infrastructure as code (Technical Design §10.2) | S1 (gateway, routine) → S2 (session) → S3 (audit) |
-| `README.md` | what FitPlan is, how to install and run in 5 commands, links to docs | first thing the teacher / Ran sees in the repo | S1 |
+| `README.md` | what FitPlan is, how to install and run in 5 commands, links to docs | first thing the teacher or a team member sees in the repo | S1 |
 | `docs/` | `TECHNICAL_DESIGN.md`, `CODE_BLUEPRINT.md`, user stories, diagrams | documentation lives next to the code it describes | S1 |
-| `postman/FitPlan.postman_collection.json` | every API request with example bodies and tests; environment variable `baseUrl` | Ran's API verification (owned by Ran) | S1–S3 |
+| `postman/FitPlan.postman_collection.json` | every API request with example bodies and tests; environment variable `baseUrl` | API verification by Vitalik (QA tester, owns the collection) | S1–S3 |
 | `postman/FitPlan.local.postman_environment.json` | `baseUrl = http://localhost:3000/api`, `token` | switch between local and deployed API | S1 |
 
 ---
@@ -251,8 +251,6 @@ services/session/
 │   │   ├── sessionDao.js
 │   │   ├── progressLogDao.js
 │   │   └── analyticsDao.js
-│   ├── domain/
-│   │   └── epley.js
 │   ├── abl/
 │   │   ├── sessionAbl.js
 │   │   ├── prAbl.js
@@ -270,7 +268,6 @@ services/session/
 │       └── analyticsRoutes.js
 └── tests/
     ├── setup.js
-    ├── epley.test.js
     ├── pr.rules.test.js
     ├── session.rules.test.js
     ├── session.api.test.js
@@ -280,14 +277,13 @@ services/session/
 
 | File | Contains | Why | Sprint |
 |---|---|---|---|
-| `models/WorkoutSession.js` | `PlanItemSchema`, `LoggedSetSchema` (**R-2 validator** `isInteger && > 0 && < 500`, reps 1–100, est1RM, isPR, prTypes, loggedAt), `WorkoutSessionSchema` (status enum, times, totals); indexes incl. **unique partial `{userId}` where `status: "active"` (R-3)**; constants `MIN_WEIGHT_KG = 0`, `MAX_WEIGHT_KG = 500` | R-2 and R-3 at database level | **S1** (data layer complete) |
+| `models/WorkoutSession.js` | `PlanItemSchema`, `LoggedSetSchema` (**R-2 validator** `isInteger && > 0 && < 500`, reps 1–100, isPR, loggedAt), `WorkoutSessionSchema` (status enum, times, totals); indexes incl. **unique partial `{userId}` where `status: "active"` (R-3)**; constants `MIN_WEIGHT_KG = 0`, `MAX_WEIGHT_KG = 500` | R-2 and R-3 at database level | **S1** (data layer complete) |
 | `models/ProgressLog.js` | schema per Technical Design §7.4; unique index `{userId, exerciseId}` | PR registry | **S1** |
 | `dao/sessionDao.js` | `insertActive(doc)`, `findActive(userId)`, `getByIdForUser(userId, id)`, `pushSet(userId, sessionId, set)` (only if `status: "active"`, returns updated doc or null), `complete(userId, id, totals)`, `discard(userId, id)`, `listCompleted(userId, { page, limit })`, `countCompleted(userId)` | only place querying sessions | S2 |
-| `dao/progressLogDao.js` | `findOne(userId, exerciseId)`, `createBaseline(doc)`, `raiseMaxWeight(userId, exerciseId, w, at, sessionId) → boolean` (`updateOne` with `maxWeightKg: { $lt: w }`), `raiseMaxEst1RM(…) → boolean` (same with `$lt`, plus `maxEst1RM: null` so a baseline from a set with > 12 reps can still be beaten), `listByUser(userId)` | **atomic conditional updates for R-4** | S2 |
-| `dao/analyticsDao.js` | `exerciseSeries(userId, exerciseId, last)` – aggregation pipeline: `$match` completed sessions of user that contain the exercise → `$sort startTime desc` → `$limit last` → `$unwind sets` → `$match exerciseId` → `$group` by session (`max weightKg`, `max est1RM`, `sum weight×reps`, `anyElementTrue isPR`) → `$sort` by date ascending | the only aggregation, isolated | S3 |
-| `domain/epley.js` | `estimate1RM(weightKg, reps) → number \| null` (reps 1 → weight; 2–12 → `w × (1 + reps/30)` rounded to 0.1; > 12 → null) | **pure function**, no DB → trivially testable; the formula exists in exactly one place | S2 |
+| `dao/progressLogDao.js` | `findOne(userId, exerciseId)`, `createBaseline(doc)`, `raiseMaxWeight(userId, exerciseId, w, at, sessionId) → boolean` (`updateOne` with `maxWeightKg: { $lt: w }`), `listByUser(userId)` | **atomic conditional update for R-4** | S2 |
+| `dao/analyticsDao.js` | `exerciseSeries(userId, exerciseId, last)` – aggregation pipeline: `$match` completed sessions of user that contain the exercise → `$sort startTime desc` → `$limit last` → `$unwind sets` → `$match exerciseId` → `$group` by session (`max weightKg`, `sum weight×reps`, `anyElementTrue isPR`) → `$sort` by date ascending | the only aggregation, isolated | S3 |
 | `abl/sessionAbl.js` | `start(userId, routineId)`: active exists → 409 `ACTIVE_SESSION_EXISTS`; `routineClient.getRoutine` → copy to `plan`; `insertActive` (E11000 → same 409); audit `SESSION_STARTED`. `getActive(userId)`. `logSet(userId, sessionId, { exerciseId, weightKg, reps })`: session must be active (else 409 `SESSION_NOT_ACTIVE`), exercise must be in `plan` (400 `SET_EXERCISE_NOT_IN_PLAN`), **R-2** (400 `SET_WEIGHT_OUT_OF_RANGE` / `SET_WEIGHT_NOT_WHOLE_KG`), `setNumber` = count + 1, `prAbl.evaluateSet`, `pushSet`; audit `SET_LOGGED` (+ `PR_ACHIEVED`). `finish(userId, id)`: totals, audit. `discard(userId, id)`: audit | **all workout rules (R-2, R-3) in one file** | S2 |
-| `abl/prAbl.js` | `evaluateSet({ userId, exerciseId, exerciseName, sessionId, weightKg, reps, at }) → { est1RM, isPR, prTypes }` implementing Technical Design §8.4 (baseline on first set, then `raiseMaxWeight` / `raiseMaxEst1RM`); `listPRs(userId)` | **R-4 in one file** | S2 |
+| `abl/prAbl.js` | `evaluateSet({ userId, exerciseId, exerciseName, sessionId, weightKg, at }) → { isPR }` implementing Technical Design §8.4 (baseline on the first set, then `raiseMaxWeight`: only a strictly heavier weight is a record); `listPRs(userId)` | **R-4 in one file** | S2 |
 | `abl/historyAbl.js` | `list(userId, { page = 1, limit = 20 })` → `{ items: SessionSummary[], page, total }` (`prCount` = sets with isPR); `detail(userId, id)` → 404 `SESSION_NOT_FOUND` | US4 | S2 |
 | `abl/analyticsAbl.js` | `exerciseProgress(userId, exerciseId, { last = 10 })` → `{ points }`; validates `last` 1–50 | US3 | S3 |
 | `clients/routineClient.js` | `getRoutine(userId, routineId)` → `fetch(ROUTINE_URL/routines/:id)` with `x-internal-key`, `x-user-id`; 404 → 404 `ROUTINE_NOT_FOUND`; network error/timeout (10 s) → 503 `ROUTINE_SERVICE_UNAVAILABLE` | the only cross-service call, in one place | S2 |
@@ -298,12 +294,11 @@ services/session/
 | `routes/progressRoutes.js` | `GET /progress/prs` | | S2 |
 | `routes/analyticsRoutes.js` | `GET /analytics/exercises/:exerciseId` | | S3 |
 | `tests/models.test.js` | schema tests without HTTP: R-2 validator 0 / 1 / 499 / 500 / 82.5; R-3 unique partial index rejects a second active session; ProgressLog unique per (user, exercise) | proves the data layer in Sprint 1, before any endpoint | **S1** |
-| `tests/epley.test.js` | 100×1 → 100; 100×8 → 126.7; 120×5 → 140; 60×15 → null; 100×12 → 140 | formula verified with the examples from the design | S2 |
-| `tests/pr.rules.test.js` | first set = baseline (no PR); heavier → weight PR; same weight more reps → e1RM PR; equal → no PR; reps > 12 → only weight PR possible; two parallel heavier sets → exactly one PR | R-4 incl. race | S2 |
+| `tests/pr.rules.test.js` | first set = baseline (no PR); heavier → PR; equal weight → no PR; lighter → no PR; two parallel heavier sets → exactly one PR | R-4 incl. race | S2 |
 | `tests/session.rules.test.js` | R-2: 0/1/499/500/999/82.5; R-3: second start → 409; **two parallel starts → one 201, one 409**; discard frees R-3; logging into finished session → 409 | R-2, R-3 | S2 |
 | `tests/session.api.test.js` | full flow start → log 3 sets → finish (volume, duration correct); routine service down → 503 (mocked client) | API contract | S2 |
 | `tests/history.api.test.js` | only completed sessions, newest first, paging, other user's session → 404 | US4 | S2 |
-| `tests/analytics.api.test.js` | 3 sessions → 3 points with correct top weight / 1RM / tonnage | US3 | S3 |
+| `tests/analytics.api.test.js` | 3 sessions → 3 points with correct top weight / tonnage | US3 | S3 |
 
 ---
 
@@ -366,7 +361,8 @@ apps/web/
 | `vite.config.js` | React plugin; dev server port 5173; proxy `/api → http://localhost:3000`; Vitest config (`environment: "jsdom"`, `setupFiles: "src/test/setup.js"`) | no CORS issues locally; one config for build + tests | S1 |
 | `vercel.json` | rewrites `/privacy` → `/privacy.html`, everything else → `/index.html` | reloading a deep link works on Vercel; the Google consent screen links to `/privacy` | S1 |
 | `.env.example` | `VITE_API_URL=`, `VITE_GOOGLE_CLIENT_ID=` | | S1 |
-| `public/favicon.svg` | FitPlan icon | | S1 |
+| `public/favicon.svg` | FitPlan logo (barbell with growing plates, gold = record), also used on the login page and in the side bar | | S1 |
+| `public/apple-touch-icon.png` | 180 px square logo | iPhone home-screen icon | S1 |
 | `public/privacy.html` | static privacy policy: what is stored (Google account id, routines, workouts, audit log), what is not, where (Vercel, Render, Atlas Frankfurt), how to delete | Google requires a privacy policy link for the published sign-in app | S1 |
 | `src/main.jsx` | `createRoot` → `<GoogleOAuthProvider clientId>` → `<AuthProvider>` → `<BrowserRouter>` → `<App/>`; imports `tokens.css`, `global.css` | providers wired once | S1 |
 | `src/App.jsx` | route table (Technical Design §4.2) with `<ProtectedRoute>` and `<AppShell>` | all URLs of the app in one place | S1 (login, routines) → S2 (workout, history) → S3 (progress) |
@@ -403,8 +399,8 @@ apps/web/
 | File | Contains | US | Sprint |
 |---|---|---|---|
 | `LoginPage.jsx` | app name + one-line vision, `<GoogleLogin>` button, calls `wakeUpServices()` on mount and shows "Waking up the server…" if slow | – | S1 |
-| `RoutinesPage.jsx` | list of `RoutineCard`, "Create routine" button, `UnfinishedSessionBanner` (S2) | US1 | S1 |
-| `RoutineEditorPage.jsx` | `RoutineBuilder` for new/edit (id from URL), save → back to list | US1 | S1 |
+| `RoutinesPage.jsx` | list of `RoutineCard`, "Create routine" button, `SuccessMessage` after a routine was created, updated or deleted, `UnfinishedSessionBanner` (S2) | US1 | S1 |
+| `RoutineEditorPage.jsx` | `RoutineBuilder` for new/edit (id from URL), save → back to list with the confirmation text | US1 | S1 |
 | `WorkoutPage.jsx` | `SessionHeader` + one `ExerciseBlock` per plan item + `FinishDialog`; no active session → redirect to `/routines` | US2 | S2 |
 | `HistoryPage.jsx` | list of `SessionListItem`, "Load more" | US4 | S2 |
 | `SessionDetailPage.jsx` | `SessionDetail` for `/history/:id` | US4 | S2 |
@@ -421,6 +417,7 @@ apps/web/
 | `ui/Badge.jsx` | small label (category, "PR") | S1 |
 | `ui/Spinner.jsx` | loading indicator | S1 |
 | `ui/ErrorMessage.jsx` | shows `ApiError` via `errorMessages.js` + "Try again" | S1 |
+| `ui/SuccessMessage.jsx` | green confirmation after a finished action (e.g. `Routine "Push Day" created`), closes itself after 4 s | S1 |
 | `ui/EmptyState.jsx` | "No routines yet" style placeholder with action | S1 |
 | `layout/AppShell.jsx` | page frame: header with user avatar + logout, content, `NavBar` | S1 |
 | `layout/NavBar.jsx` | bottom tab bar on mobile / side links on desktop; `TABS` array grows per sprint: S1 Routines → S2 + Workout, History → S3 + Progress (Technical Design §1.3); hidden on `/workout` (focus mode) | S1 |
@@ -432,14 +429,14 @@ apps/web/
 | `session/SessionHeader.jsx` | routine name, running timer, Finish button | S2 |
 | `session/ExerciseBlock.jsx` | exercise name, target, logged `SetRow`s, `SetInput` | S2 |
 | `session/SetInput.jsx` | weight `NumberStepper` (−5/−1/+1/+5) + reps stepper + big "Log set" button; client-side R-2 hint | S2 |
-| `session/SetRow.jsx` | "Set 2 · 120 kg × 8 · e1RM 152" + `PRBadge` | S2 |
-| `session/PRBadge.jsx` | gold badge "PR" with tooltip "weight" / "1RM" | S2 |
+| `session/SetRow.jsx` | "Set 2 · 120 kg × 8" + `PRBadge` when it is a record | S2 |
+| `session/PRBadge.jsx` | gold badge "PR" (the weight beat the best so far) | S2 |
 | `session/FinishDialog.jsx` | summary (sets, volume, duration, PRs) + confirm | S2 |
 | `history/SessionListItem.jsx` | date, routine, duration, volume, PR count | S2 |
 | `history/SessionDetail.jsx` | sets grouped by exercise | S2 |
 | `analytics/ExerciseSelect.jsx` | dropdown of exercises the user has trained | S3 |
 | `analytics/ProgressChart.jsx` | hand-written SVG line chart (Technical Design §4.6), PR points gold, empty state < 2 points | S3 |
-| `analytics/PRSummaryGrid.jsx` | card per exercise: best weight, best e1RM, date | S3 |
+| `analytics/PRSummaryGrid.jsx` | card per exercise: heaviest weight and its date | S3 |
 
 ### 8.6 `src/styles/`, `src/utils/`, tests
 
@@ -451,6 +448,8 @@ apps/web/
 | `utils/errorMessages.js` | map error code → friendly English text (e.g. `ROUTINE_EXERCISE_COUNT_INVALID` → "A routine needs 1–15 exercises.") | S1 |
 | `test/setup.js` | Testing Library `jest-dom` matchers, `cleanup` after each test | S1 |
 | `components/routines/RoutineBuilder.test.jsx` | save disabled with 0 exercises; counter stops at 15 | S1 |
+| `components/ui/SuccessMessage.test.jsx` | shows the text, closes itself after 4 s | S1 |
+| `pages/RoutinesPage.test.jsx` | confirmation after create, update and delete; none after a failed delete; not shown again after a reload | S1 |
 | `components/session/SetInput.test.jsx` | stepper changes weight by ±1/±5; cannot go ≤ 0 or ≥ 500 | S2 |
 | `components/analytics/ProgressChart.test.jsx` | renders one circle per point; gold for PR | S3 |
 | `utils/format.test.js` | duration and date formatting | S1 |
@@ -486,7 +485,7 @@ RoutineBuilder.jsx  (Save clicked)
      → exerciseDao.getManyByIds(ids)
      → routineDao.create(doc)        ← WorkoutRoutine schema validates R-1 again
      → auditClient.send("ROUTINE_CREATED")   (not awaited)
- ← 201 JSON ← controller ← gateway ← client.js → hook reloads list → RoutinesPage
+ ← 201 JSON ← controller ← gateway ← client.js → back to RoutinesPage: list loads, SuccessMessage "Routine created"
 ```
 
 ### 10.2 Log a set (US2, R-2, R-4)
@@ -498,11 +497,10 @@ SetInput.jsx ("Log set") → useActiveSession.logSet(exerciseId, 120, 8)  (shows
      → sessionDao.getByIdForUser        (must be active, exercise in plan)
      → R-2 check                        (0 < 120 < 500, integer)
      → prAbl.evaluateSet(...)
-         → epley.estimate1RM(120, 8) = 152.0
-         → progressLogDao.findOne / raiseMaxWeight / raiseMaxEst1RM   (atomic $lt)
+         → progressLogDao.findOne / raiseMaxWeight   (atomic $lt: 120 > best 115 → record)
      → sessionDao.pushSet(...)          (only if still active)
      → auditClient.send("SET_LOGGED"), ("PR_ACHIEVED")
- ← 201 { set, isPR, prTypes } → useActiveSession replaces "saving…" row → SetRow + PRBadge
+ ← 201 { set, isPR } → useActiveSession replaces "saving…" row → SetRow + PRBadge
 ```
 
 ### 10.3 Start a workout (US2, R-3)
@@ -530,7 +528,7 @@ RoutineCard.jsx ("Start workout") → useActiveSession.start(routineId)
 | 5 | web: config, api, AuthContext, LoginPage, AppShell | Google login works locally |
 | 6 | web: routines pages & components | US1 works end-to-end locally |
 | 7 | `render.yaml`, Vercel project, Atlas users, Google origins | US1 works on the public URL |
-| 8 | Ran: Postman collection + manual QA; fixes | ready for demo 23.11. |
+| 8 | Vitalik: Postman collection + manual QA; fixes | ready for demo 23.11. |
 
 ---
 
@@ -539,4 +537,4 @@ RoutineCard.jsx ("Start workout") → useActiveSession.start(routineId)
 | | Name | Date | Signature / OK |
 |---|---|---|---|
 | Lead Developer | Jakub Kalina | | |
-| Lead Analyst & QA | Ran Regev | | |
+| Lead Analyst | Ran Regev | | |
