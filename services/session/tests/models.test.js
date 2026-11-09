@@ -81,9 +81,4 @@ describe("ProgressLog", () => {
     await expect(ProgressLog.create(log(exerciseId))).rejects.toThrow(/E11000/);
     await expect(ProgressLog.create(log(id()))).resolves.toBeDefined();
   });
-
-  it("maxEst1RM may be null (baseline set with more than 12 reps)", async () => {
-    const saved = await ProgressLog.create(log(id()));
-    expect(saved.maxEst1RM).toBeNull();
-  });
 });

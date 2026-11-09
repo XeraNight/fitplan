@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 export const MIN_WEIGHT_KG = 0; // exclusive
 export const MAX_WEIGHT_KG = 500; // exclusive
 export const SESSION_STATUS = ["active", "completed", "discarded"];
-export const PR_TYPES = ["weight", "e1rm"];
 
 const integer = { validator: Number.isInteger, message: "{PATH} must be a whole number" };
 const { ObjectId } = mongoose.Schema.Types;
@@ -38,9 +37,7 @@ const LoggedSetSchema = new mongoose.Schema({
     ],
   },
   reps: { type: Number, required: true, min: 1, max: 100, validate: integer },
-  est1RM: { type: Number, default: null },
   isPR: { type: Boolean, default: false },
-  prTypes: { type: [{ type: String, enum: PR_TYPES }], default: [] },
   loggedAt: { type: Date, default: Date.now },
 });
 
