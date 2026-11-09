@@ -55,3 +55,45 @@ describe("Auth API", () => {
     expect((await request(app).get("/api/health").expect(200)).body).toEqual({ status: "ok" });
   });
 });
+
+// Technical Design §5.4 and §5.5: CORS lets only our frontend call the API, rate limits stop flooding.
+describe("Edge security: CORS and rate limits", () => {
+  const ourFrontend = "http://localhost:5173"; // = corsOrigin in testConfig
+
+  it("CORS: our frontend is allowed to read the answer", async () => {
+    const res = await request(app).get("/api/health").set("origin", ourFrontend).expect(200);
+    expect(res.headers["access-control-allow-origin"]).toBe(ourFrontend);
+  });
+
+  it("CORS: another website gets no permission, so the browser blocks it", async () => {
+    const res = await request(app).get("/api/health").set("origin", "https://evil.example");
+    expect(res.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+
+  it("CORS: the browser's pre-check before saving a routine is answered without a token", async () => {
+    const res = await request(app)
+      .options("/api/routines")
+      .set("origin", ourFrontend)
+      .set("access-control-request-method", "POST")
+      .set("access-control-request-headers", "authorization,content-type")
+      .expect(204);
+    expect(res.headers["access-control-allow-origin"]).toBe(ourFrontend);
+    expect(res.headers["access-control-allow-headers"]).toContain("authorization");
+  });
+
+  it("general rate limit: 300 requests per 15 min per IP", async () => {
+    const res = await request(app).get("/api/health").expect(200);
+    expect(res.headers["ratelimit-policy"]).toContain('"300-in-15min"');
+  });
+
+  it("21st sign-in from one IP within 15 min -> 429 RATE_LIMITED, other IPs still pass", async () => {
+    // trust proxy: the client IP comes from X-Forwarded-For, as on Render
+    const login = (ip) => request(app).post("/api/auth/google").set("x-forwarded-for", ip).send({});
+    for (let i = 0; i < 20; i++) expect((await login("203.0.113.1")).status).toBe(400);
+
+    const blocked = await login("203.0.113.1");
+    expect(blocked.status).toBe(429);
+    expect(blocked.body.error.code).toBe("RATE_LIMITED");
+    expect((await login("203.0.113.2")).status).toBe(400);
+  });
+});
