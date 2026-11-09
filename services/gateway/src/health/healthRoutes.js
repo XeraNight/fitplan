@@ -1,13 +1,14 @@
 import { Router } from "express";
 
-const WAKE_UP_TIMEOUT_MS = 60_000;
+const WAKE_UP_TIMEOUT_MS = 20_000;
 
 export function healthRoutes(config) {
   const router = Router();
 
   router.get("/", (req, res) => res.json({ status: "ok" }));
 
-  // Warm-up before a demo: calls /health of every configured service in parallel.
+  // Warm-up: calls /health of every configured service in parallel, so they are started
+  // before the user's first real request.
   router.get("/services", async (req, res) => {
     const services = Object.entries(config.services).filter(([, url]) => url);
     const results = await Promise.allSettled(

@@ -18,7 +18,7 @@ export function createApp(config) {
   });
 
   const app = express();
-  app.set("trust proxy", 1); // Render's load balancer: see the real client IP for rate limits
+  app.set("trust proxy", 1); // Vercel's proxy in front: see the real client IP for rate limits
   app.use(helmet());
   app.use(cors({ origin: config.corsOrigin }));
   app.use(generalLimiter);

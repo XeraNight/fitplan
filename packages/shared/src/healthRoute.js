@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-// GET /health for Render health checks and the warm-up call. No authentication.
+// GET /health for the warm-up call and for checking a deployment. No authentication.
 export function healthRoute(mongoose) {
   const router = Router();
   router.get("/health", (req, res) => {

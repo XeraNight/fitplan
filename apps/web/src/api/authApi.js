@@ -2,5 +2,5 @@ import { request } from "./client.js";
 
 export const loginWithGoogle = (credential) => request("POST", "/auth/google", { credential });
 export const getMe = () => request("GET", "/auth/me");
-// wakes the free Render servers (they sleep after 15 min without traffic)
+// starts the gateway and the services in parallel before the first real request
 export const wakeUpServices = () => request("GET", "/health/services");

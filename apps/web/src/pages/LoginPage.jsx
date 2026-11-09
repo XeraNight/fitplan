@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [waking, setWaking] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
 
-  // The free servers sleep after 15 min: start waking them while the user looks at this page.
+  // Start the backend functions while the user looks at this page, so signing in is fast.
   useEffect(() => {
     const slow = setTimeout(() => setWaking(true), 1500);
     wakeUpServices()
@@ -71,7 +71,7 @@ export default function LoginPage() {
       <ErrorMessage error={error} />
       {waking && (
         <p className={styles.wake}>
-          <Spinner inline delay={0} /> Waking up the server… (up to a minute)
+          <Spinner inline delay={0} /> Connecting to the server…
         </p>
       )}
       <a className={styles.privacy} href="/privacy">

@@ -1,3 +1,4 @@
+// Local start (npm run dev). On Vercel, api/index.js is used instead.
 import { loadConfig } from "./config.js";
 import { connectDb, disconnectDb } from "./db.js";
 import { createApp } from "./app.js";
@@ -8,7 +9,7 @@ const server = createApp(config).listen(config.port, () =>
   console.log(`routine service on :${config.port}`),
 );
 
-// Render sends SIGTERM on every redeploy: finish open requests, then close the DB connection.
+// Stopped by a process manager (SIGTERM): finish open requests, then close the DB connection.
 process.on("SIGTERM", () => {
   server.close(async () => {
     await disconnectDb();

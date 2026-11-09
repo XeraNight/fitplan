@@ -1,7 +1,7 @@
 // Error code -> plain-language text. Codes are never shown to the user (UI guide rule).
 const MESSAGES = {
   NETWORK_ERROR: "No connection to the server. Check your internet and try again.",
-  SERVICE_UNAVAILABLE: "The server is waking up. Please try again in a minute.",
+  SERVICE_UNAVAILABLE: "The server is not reachable right now. Please try again in a moment.",
   RATE_LIMITED: "Too many requests. Please wait a moment.",
   AUTH_REQUIRED: "Please sign in again.",
   TOKEN_EXPIRED: "Your sign-in expired. Please sign in again.",

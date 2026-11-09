@@ -4,11 +4,11 @@ import { getToken } from "./tokenStorage.js";
 // The only place that talks to the backend.
 const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
-// Free Render services sleep after 15 min; while one wakes up (about a minute) Render answers
-// 502/503/504 without our JSON. Reads are retried quietly instead of showing an error.
-const WAKING_STATUSES = new Set([502, 503, 504]);
-export const RETRY_DELAY_MS = 5_000;
-export const MAX_WAKE_UP_MS = 75_000;
+// While a backend function starts or is briefly unavailable (e.g. during a deploy), the answer
+// can be 502/503/504 without our JSON. Reads are retried quietly instead of showing an error.
+const RETRY_STATUSES = new Set([502, 503, 504]);
+export const RETRY_DELAY_MS = 2_000;
+export const MAX_WAKE_UP_MS = 20_000;
 
 let onUnauthorized = () => {};
 export function setOnUnauthorized(callback) {
@@ -55,7 +55,7 @@ async function send(method, path, body) {
   if (!response.ok) {
     const error = data?.error ?? {};
     if (response.status === 401 && token) onUnauthorized();
-    const fallback = WAKING_STATUSES.has(response.status) ? "SERVICE_UNAVAILABLE" : "UNKNOWN_ERROR";
+    const fallback = RETRY_STATUSES.has(response.status) ? "SERVICE_UNAVAILABLE" : "UNKNOWN_ERROR";
     throw new ApiError(response.status, error.code ?? fallback, error.message, error.details);
   }
   return data;

@@ -87,7 +87,7 @@ describe("Edge security: CORS and rate limits", () => {
   });
 
   it("21st sign-in from one IP within 15 min -> 429 RATE_LIMITED, other IPs still pass", async () => {
-    // trust proxy: the client IP comes from X-Forwarded-For, as on Render
+    // trust proxy: the client IP comes from X-Forwarded-For, as on Vercel
     const login = (ip) => request(app).post("/api/auth/google").set("x-forwarded-for", ip).send({});
     for (let i = 0; i < 20; i++) expect((await login("203.0.113.1")).status).toBe(400);
 

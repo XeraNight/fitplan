@@ -4,8 +4,8 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 // Sprint 2 adds session (/sessions, /progress, /analytics), Sprint 3 adds audit (/audit).
 export const ROUTES = [{ service: "routine", prefixes: ["/exercises", "/routines"] }];
 
-// A service may sleep on the free plan (~1 min to wake up), so wait up to 70 s.
-const TIMEOUT_MS = 70_000;
+// A service that has to start first answers within seconds; after 30 s the gateway gives up (503).
+const TIMEOUT_MS = 30_000;
 
 export function buildProxies(config) {
   return ROUTES.flatMap(({ service, prefixes }) => {

@@ -16,7 +16,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("client.request while a Render service wakes up", () => {
+describe("client.request while a backend function is starting or briefly unavailable", () => {
   it("GET: retries a 502 without our JSON and returns the data when the server is up", async () => {
     fetch.mockReturnValueOnce(json(502)).mockReturnValueOnce(json(200, [{ name: "Push Day" }]));
     const result = request("GET", "/routines");
